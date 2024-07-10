@@ -2,7 +2,7 @@
   "name": "job-search-app",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "npm run build && node dist/index.js",
     "dev": "nodemon -L ./src/index.ts",
