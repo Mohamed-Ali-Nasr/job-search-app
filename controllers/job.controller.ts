@@ -55,7 +55,7 @@ export const addJob = async (
     await newJob.save();
 
     //! Push The Id Of New Job To Jobs Id Array In Company Model =>
-    (company?.jobsId as string[]).push(newJob._id as string);
+    (company?.jobsId as string[]).push(newJob._id);
     await company?.save();
 
     res.status(201).json({
@@ -282,7 +282,7 @@ export const applyJob = async (
     await newApplication.save();
 
     //! Push The Id Of New Application To Applications Id Array In Jobs Model =>
-    (job?.applicationsId as string[]).push(newApplication._id as string);
+    (job?.applicationsId as string[]).push(newApplication._id);
     await job?.save();
 
     res.status(201).json({

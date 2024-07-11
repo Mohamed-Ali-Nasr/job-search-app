@@ -260,7 +260,7 @@ export const companyApplications = async (
     let application: any[] = [];
 
     company.jobsId.forEach((job: any) => {
-      job.applicationsId.map((app: any) => {
+      job.applicationsId.map((app: IApplication) => {
         application.push({
           _id: app._id,
           userTechSkills: app.userTechSkills,
@@ -270,8 +270,6 @@ export const companyApplications = async (
         });
       });
     });
-
-    console.log(application);
 
     //! Create A Workbook And Worksheet =>
     const workbook = XLSX.utils.book_new();

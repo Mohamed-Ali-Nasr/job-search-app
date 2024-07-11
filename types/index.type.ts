@@ -17,6 +17,7 @@ export type SendEmailServiceParams = {
 };
 
 export interface IUser extends Document {
+  _id: string;
   firstName: string;
   lastName: string;
   username: string;
@@ -32,11 +33,13 @@ export interface IUser extends Document {
 }
 
 export interface IUserToken extends Document {
+  _id: string;
   userId: ObjectId;
   token: string;
 }
 
 export interface ICompany extends Document {
+  _id: string;
   companyName: string;
   description: string;
   industry: string;
@@ -48,6 +51,7 @@ export interface ICompany extends Document {
 }
 
 export interface IJob extends Document {
+  _id: string;
   jobTitle: string;
   jobLocation: "onsite" | "remotely" | "hybrid";
   workingTime: "part-time" | "full-time";
@@ -61,9 +65,11 @@ export interface IJob extends Document {
 }
 
 export interface IApplication extends Document {
+  _id: string;
   jobId: ObjectId | IJob;
   userId: ObjectId | IUser;
   userTechSkills: string[];
   userSoftSkills: string[];
   userResume: string;
+  createdAt: Date;
 }
