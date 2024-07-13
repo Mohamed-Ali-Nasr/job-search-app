@@ -2,10 +2,10 @@ import "dotenv/config";
 import express, { NextFunction, Request, Response } from "express";
 import http from "http";
 import createHttpError, { isHttpError } from "http-errors";
-import routes from "./routes/index.route";
+import routes from "./src/routes/index.route";
 import morgan from "morgan";
 import mongoose from "mongoose";
-import env from "./utils/validateEnv.util";
+import env from "./src/utils/validateEnv.util";
 
 /* Configuration and Middlewares */
 const app = express();

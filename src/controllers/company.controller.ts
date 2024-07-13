@@ -1,7 +1,7 @@
 import { NextFunction, Response } from "express";
 import CompanyModel from "../models/company.model";
 import createHttpError from "http-errors";
-import { IApplication, IJob, IRequest } from "../types/index.type";
+import { IApplication, IRequest } from "../types/index.type";
 import JobModel from "../models/job.model";
 import ApplicationModel from "../models/application.model";
 import XLSX from "xlsx";
