@@ -20,7 +20,9 @@ const UserSchema = new Schema<IUser>({
 
   isConfirmed: { type: Boolean, default: false },
 
-  isPasswordReset: { type: Boolean, default: false },
+  otp: { type: String },
+
+  otpExpires: { type: Date },
 
   recoveryEmail: { type: String, required: true },
 

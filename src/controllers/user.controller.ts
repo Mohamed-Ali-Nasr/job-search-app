@@ -11,6 +11,7 @@ import { IRequest } from "../types/index.type";
 import CompanyModel from "../models/company.model";
 import JobModel from "../models/job.model";
 import ApplicationModel from "../models/application.model";
+import { generateOTP } from "../utils/generateOtp.util";
 
 export const signup: RequestHandler = async (req, res, next) => {
   const {
@@ -334,65 +335,39 @@ export const updatePassword = async (
 };
 
 export const forgetPassword: RequestHandler = async (req, res, next) => {
-  const { recoveryEmail } = req.body;
+  const { email } = req.body;
 
   try {
     //! Find User By Email =>
-    const user = await UserModel.findOne({ recoveryEmail });
+    const user = await UserModel.findOne({
+      $or: [{ email }, { recoveryEmail: email }],
+    });
     if (!user) {
       throw createHttpError(400, "No User Account Found By This Email");
     }
 
-    //! Generate Token For Exist User =>
-    const token = jwt.sign({ userId: user._id }, env.JWT_RESET_PASSWORD, {
-      expiresIn: "20m",
-    });
+    //! Generate OTP =>
+    const otp = generateOTP();
 
-    //! Generate Email Confirmation Link =>
-    const confirmationLink = `${req.protocol}://${req.headers.host}/api/user/verify-recovery-email/${token}`;
+    //! Save OTP To Database With Expiration Time =>
+    await UserModel.findOneAndUpdate(
+      { $or: [{ email }, { recoveryEmail: email }] },
+      { otp, otpExpires: new Date(Date.now() + 300000) } // OTP expires in 5 minutes
+    );
 
-    //! Sending Email To Verify If Email Is Valid =>
+    //! Send OTP To User's Email =>
     const isEmailSent = await sendEmailService({
-      to: recoveryEmail as string,
+      to: email as string,
       subject: "Password Reset Instructions",
-      textMessage: "Please use the following link to reset your password",
-      htmlMessage: `<a href=${confirmationLink}>Please use the following link to reset your password</a>`,
+      textMessage: "Reset Your Password",
+      htmlMessage: `Your OTP is: ${otp}`,
     });
     if (isEmailSent.rejected.length) {
       throw createHttpError(500, "Verification Email Sending Is Failed");
     }
 
-    res
-      .status(201)
-      .json({ message: "Password reset details sent to your email" });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const verifyRecoveryEmail: RequestHandler = async (req, res, next) => {
-  const { token } = req.params;
-
-  try {
-    //! Verify Token Param To Get The data
-    const data = jwt.verify(token, env.JWT_RESET_PASSWORD);
-
-    //! Find The User Account And Update Reset Password Status =>
-    const resetPassUser = await UserModel.findOneAndUpdate(
-      { _id: (data as any)?.userId, isPasswordReset: false },
-      { isPasswordReset: true },
-      { new: true }
-    );
-
-    //! Check If The User Account Not Exist =>
-    if (!resetPassUser) {
-      throw createHttpError(404, "No Users Found By This Id");
-    }
-
-    res.status(200).json({
-      message:
-        "User Account Verified Successfully, Now You Can Reset Yor Password With New One",
-      userId: (data as any)?.userId,
+    res.status(201).json({
+      message: "OTP Sent To Your Email Successfully, Please Reset Password",
     });
   } catch (error) {
     next(error);
@@ -400,24 +375,21 @@ export const verifyRecoveryEmail: RequestHandler = async (req, res, next) => {
 };
 
 export const resetPassword: RequestHandler = async (req, res, next) => {
-  const { userId } = req.params;
-  const { newPassword } = req.body;
+  const { email, otp, newPassword } = req.body;
 
   try {
-    //! Find The User Account By Id =>
-    const user = await UserModel.findById({ _id: userId });
-
+    //! Find User By Email In Database =>
+    const user = await UserModel.findOne({
+      $or: [{ email }, { recoveryEmail: email }],
+    });
     //! Check If The User Account Not Exist =>
     if (!user) {
       throw createHttpError(404, "No Users Found By This Id");
     }
 
-    //! Check If Password Reset Status Is Not True =>
-    if (!user.isPasswordReset) {
-      throw createHttpError(
-        400,
-        "Failed To Reset Password, Please Verify Your Recovery Email First And Then Try Again"
-      );
+    //! Check If OTP Is Correct And Not Expired =>
+    if (user.otp !== otp || user.otpExpires < new Date()) {
+      throw createHttpError(400, "Invalid or expired OTP");
     }
 
     //! Hash The Password =>
@@ -425,13 +397,10 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
     const hashedNewPassword = await bcrypt.hash(newPassword, salt);
 
     //! Update The Old Password With The New Password =>
-    user.password = hashedNewPassword;
-
-    //! Update Reset Password Status To The Default =>
-    user.isPasswordReset = false;
-
-    //! Save User To Database =>
-    await user.save();
+    await UserModel.findOneAndUpdate(
+      { $or: [{ email }, { recoveryEmail: email }] },
+      { password: hashedNewPassword }
+    );
 
     res.status(201).json({
       message: "New Password Is Updated Successfully, You Can Signin Now",

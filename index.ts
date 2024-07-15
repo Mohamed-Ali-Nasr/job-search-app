@@ -18,7 +18,8 @@ const server = http.createServer(app);
 server.listen(PORT, () => {
   console.log(`Server running on port: ${PORT}`);
 });
-app.get("/", (req, res) => res.send("Express on Vercel"));
+
+app.get("/", (req, res) => res.send("Hello World"));
 
 /* Mongoose Setup */
 mongoose.Promise = Promise;

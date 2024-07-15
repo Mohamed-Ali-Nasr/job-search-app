@@ -9,6 +9,9 @@
     "build": "npx tsc"
   },
   "keywords": [],
+  "engines": {
+    "node": "20.x"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {

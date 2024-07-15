@@ -11,7 +11,6 @@ import {
   updateAccount,
   updatePassword,
   verifyEmail,
-  verifyRecoveryEmail,
 } from "../controllers/user.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { validationMiddleware } from "../middlewares/validation.middleware";
@@ -67,14 +66,8 @@ export default (router: Router) => {
     forgetPassword
   );
 
-  router.get(
-    "/user/verify-recovery-email/:token",
-    validationMiddleware(verifyEmailSchema),
-    verifyRecoveryEmail
-  );
-
   router.post(
-    "/user/reset-password/:userId",
+    "/user/reset-password",
     validationMiddleware(resetPasswordSchema),
     resetPassword
   );

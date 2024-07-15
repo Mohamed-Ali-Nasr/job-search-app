@@ -24,7 +24,8 @@ export interface IUser extends Document {
   email: string;
   password: string;
   isConfirmed: boolean;
-  isPasswordReset: boolean;
+  otp: string;
+  otpExpires: Date;
   recoveryEmail: string;
   DOB: string;
   mobileNumber: string;

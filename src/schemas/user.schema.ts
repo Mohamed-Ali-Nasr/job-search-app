@@ -126,7 +126,7 @@ export const verifyEmailSchema = {
 
 export const forgetPasswordSchema = {
   body: Joi.object({
-    recoveryEmail: Joi.string().email().required(),
+    email: Joi.string().email().required(),
   }),
 };
 
@@ -141,7 +141,14 @@ export const resetPasswordSchema = {
         "string.pattern.base":
           "Password Must Be At Least 8 characters long. ensures there is at least one lowercase letter, at least one uppercase letter, at least one digit and at least one special character from the set @$!%*?&.",
       }),
-  }),
 
-  params: getProfileDataSchema.params,
+    email: Joi.string().email().required(),
+
+    otp: Joi.string()
+      .required()
+      .pattern(/^\d{6}$/)
+      .messages({
+        "string.pattern.base": "otp Must Be 6 digits long.",
+      }),
+  }),
 };
