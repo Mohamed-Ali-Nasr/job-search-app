@@ -79,7 +79,6 @@ export const signup: RequestHandler = async (req, res, next) => {
 
     res.status(201).json({
       message: "User Created Successfully, Please Verify Your Email",
-      newUser,
     });
   } catch (error) {
     next(error);
@@ -98,6 +97,8 @@ export const verifyEmail: RequestHandler = async (req, res, next) => {
       { _id: (data as any)?.userId, isConfirmed: false },
       { isConfirmed: true },
       { new: true }
+    ).select(
+      "_id username email DOB mobileNumber recoveryEmail role status isConfirmed"
     );
 
     //! Check If The User Account Not Exist =>
@@ -139,8 +140,6 @@ export const signin: RequestHandler = async (req, res, next) => {
       );
     }
 
-    //! Add Authenticated User To Request =>
-
     //! Change The Status Of User =>
     user.status = "online";
 
@@ -150,7 +149,18 @@ export const signin: RequestHandler = async (req, res, next) => {
     //! Save User To Database =>
     await user.save();
 
-    res.status(201).json({ accessToken, user });
+    const loginUser = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      recoveryEmail: user.recoveryEmail,
+      DOB: user.DOB,
+      mobileNumber: user.mobileNumber,
+      role: user.role,
+      status: user.status,
+    };
+
+    res.status(201).json({ accessToken, loginUser });
   } catch (error) {
     next(error);
   }
@@ -171,6 +181,8 @@ export const updateAccount = async (
       { _id: userId },
       { firstName, lastName, email, DOB, mobileNumber, recoveryEmail },
       { new: true }
+    ).select(
+      "_id firstName lastName username email DOB mobileNumber recoveryEmail role status"
     );
 
     //! Check If Updated User Account Not Exists In Database =>
@@ -178,10 +190,11 @@ export const updateAccount = async (
       throw createHttpError(404, "No User Account Found By This Id");
     }
 
-    //! Verify User Account Email Address If Updated It =>
+    //! Verify User Account Email Address If You Updated It =>
     if (email) {
-      //! Change Email Confirmation =>
+      //! Change Email Confirmation And The Status Of Account  =>
       updatedAccount.isConfirmed = false;
+      updatedAccount.status = "offline";
       await updatedAccount.save();
 
       //! Generate Token For Updated User Account =>
@@ -209,6 +222,13 @@ export const updateAccount = async (
       );
     }
 
+    //! Check If First Name or Last Name Is Updated =>
+    if (firstName || lastName) {
+      updatedAccount.username = `${
+        firstName ? firstName : updatedAccount.firstName
+      }-${lastName ? lastName : updatedAccount.lastName}`;
+    }
+
     //! Save Updated User Account To Database =>
     await updatedAccount.save();
 
@@ -231,7 +251,7 @@ export const deleteAccount = async (
     //! Find User Account By Id And Delete =>
     const deletedAccount = await UserModel.findByIdAndDelete({
       _id: userId,
-    });
+    }).select("_id username email DOB mobileNumber recoveryEmail role status");
 
     //! Check If Deleted User Account Not Exists In Database =>
     if (!deletedAccount) {
@@ -275,7 +295,9 @@ export const getUserAccountData = async (
 
   try {
     //! Find User Account By Id =>
-    const userAccount = await UserModel.findById({ _id: userId });
+    const userAccount = await UserModel.findById({ _id: userId }).select(
+      "_id username email DOB mobileNumber recoveryEmail role status"
+    );
 
     //! Check If User Account Not Exists In Database =>
     if (!userAccount) {
@@ -293,7 +315,9 @@ export const getProfileData: RequestHandler = async (req, res, next) => {
 
   try {
     //! Find User Account By Id =>
-    const profileData = await UserModel.findById({ _id: userId });
+    const profileData = await UserModel.findById({ _id: userId }).select(
+      "_id username email DOB mobileNumber recoveryEmail role status"
+    );
 
     //! Check If User Account Not Exists In Database =>
     if (!profileData) {
@@ -325,9 +349,20 @@ export const updatePassword = async (
     //! Save New Password Account To Database =>
     await authUser!.save();
 
+    const user = {
+      _id: authUser?._id,
+      username: authUser?.username,
+      email: authUser?.email,
+      recoveryEmail: authUser?.recoveryEmail,
+      DOB: authUser?.DOB,
+      mobileNumber: authUser?.mobileNumber,
+      role: authUser?.role,
+      status: authUser?.status,
+    };
+
     res.status(201).json({
       message: "Password Updated Successfully",
-      authUser,
+      user,
     });
   } catch (error) {
     next(error);
