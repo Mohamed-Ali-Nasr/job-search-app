@@ -259,26 +259,14 @@ export const deleteAccount = async (
     }
 
     //! Delete All Related To This User Account =>
-    const userCompanies = await CompanyModel.find({ companyHR: userId });
-    userCompanies?.forEach(async (company) => {
-      await company.deleteOne();
-    });
-
-    await (userCompanies as any)?.save();
+    await CompanyModel.find({ companyHR: userId }).deleteMany();
 
     const companyJobs = await JobModel.find({ addedBy: userId });
-    companyJobs?.map(async (job) => {
-      const applications = await ApplicationModel.find({
-        jobId: job._id,
-      });
-      applications?.map(async (application) => {
-        await application.deleteOne();
-      });
-      await job.deleteOne();
-      await (applications as any)?.save();
+    companyJobs?.forEach(async (job) => {
+      await ApplicationModel.find({ jobId: job._id }).deleteMany();
     });
 
-    await (companyJobs as any)?.save();
+    await JobModel.find({ addedBy: userId }).deleteMany();
 
     //! Delete Token Created By This User Account =>
     await UserTokenModel.findOneAndDelete({ userId });

@@ -147,11 +147,7 @@ export const deleteJob = async (
     await company?.save();
 
     //! Delete Applications Related To This Job =>
-    const applications = await ApplicationModel.find({ jobId });
-    applications?.forEach(async (application) => {
-      await application.deleteOne();
-    });
-    await (applications as any)?.save();
+    await ApplicationModel.find({ jobId }).deleteMany();
 
     res.status(201).json({ message: "Job Deleted Successfully", deletedJob });
   } catch (error) {

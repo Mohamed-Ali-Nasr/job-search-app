@@ -127,15 +127,10 @@ export const deleteCompany = async (
     const companyJobs = await JobModel.find({ companyInfo: companyId });
 
     companyJobs?.forEach(async (job) => {
-      const applications = await ApplicationModel.find({ jobId: job._id });
-      applications?.forEach(async (application) => {
-        await application.deleteOne();
-      });
-      await (applications as any)?.save();
-      await job.deleteOne();
+      await ApplicationModel.find({ jobId: job._id }).deleteMany();
     });
 
-    await (companyJobs as any)?.save();
+    await JobModel.find({ companyInfo: companyId }).deleteMany();
 
     res
       .status(201)
@@ -222,7 +217,7 @@ export const getApplicationsJobs = async (
 
     //! Check If These Applications Exist In Database =>
     if (applicationsJobs.length < 1) {
-      throw createHttpError(400, "There Is No Companies Founds");
+      throw createHttpError(400, "There Is No Companies Found");
     }
 
     res.status(200).json(applicationsJobs);
