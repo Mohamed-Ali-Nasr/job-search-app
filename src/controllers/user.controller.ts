@@ -262,6 +262,7 @@ export const deleteAccount = async (
     const userCompanies = await CompanyModel.find({ companyHR: userId });
     userCompanies?.forEach(async (company) => {
       await company.deleteOne();
+      await company.save();
     });
 
     const companyJobs = await JobModel.find({ addedBy: userId });
@@ -271,8 +272,10 @@ export const deleteAccount = async (
       });
       applications?.forEach(async (application) => {
         await application.deleteOne();
+        await application.save();
       });
       await job.deleteOne();
+      await job.save();
     });
 
     //! Delete Token Created By This User Account =>

@@ -150,6 +150,7 @@ export const deleteJob = async (
     const applications = await ApplicationModel.find({ jobId });
     applications.forEach(async (application) => {
       await application.deleteOne();
+      await application.save();
     });
 
     res.status(201).json({ message: "Job Deleted Successfully", deletedJob });
