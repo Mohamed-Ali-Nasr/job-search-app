@@ -128,7 +128,7 @@ export const deleteCompany = async (
 
     companyJobs?.forEach(async (job) => {
       const applications = await ApplicationModel.find({ jobId: job._id });
-      applications?.forEach(async (application) => {
+      applications?.map(async (application) => {
         await application.deleteOne();
         await application.save();
       });

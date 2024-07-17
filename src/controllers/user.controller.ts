@@ -260,17 +260,17 @@ export const deleteAccount = async (
 
     //! Delete All Related To This User Account =>
     const userCompanies = await CompanyModel.find({ companyHR: userId });
-    userCompanies?.forEach(async (company) => {
+    userCompanies?.map(async (company) => {
       await company.deleteOne();
       await company.save();
     });
 
     const companyJobs = await JobModel.find({ addedBy: userId });
-    companyJobs?.forEach(async (job) => {
+    companyJobs?.map(async (job) => {
       const applications = await ApplicationModel.find({
         jobId: job._id,
       });
-      applications?.forEach(async (application) => {
+      applications?.map(async (application) => {
         await application.deleteOne();
         await application.save();
       });
