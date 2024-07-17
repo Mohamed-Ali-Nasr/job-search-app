@@ -260,10 +260,11 @@ export const deleteAccount = async (
 
     //! Delete All Related To This User Account =>
     const userCompanies = await CompanyModel.find({ companyHR: userId });
-    userCompanies?.map(async (company) => {
+    userCompanies?.forEach(async (company) => {
       await company.deleteOne();
-      await company.save();
     });
+
+    await (userCompanies as any)?.save();
 
     const companyJobs = await JobModel.find({ addedBy: userId });
     companyJobs?.map(async (job) => {
@@ -272,11 +273,12 @@ export const deleteAccount = async (
       });
       applications?.map(async (application) => {
         await application.deleteOne();
-        await application.save();
       });
       await job.deleteOne();
-      await job.save();
+      await (applications as any)?.save();
     });
+
+    await (companyJobs as any)?.save();
 
     //! Delete Token Created By This User Account =>
     await UserTokenModel.findOneAndDelete({ userId });

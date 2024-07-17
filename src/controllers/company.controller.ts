@@ -128,13 +128,14 @@ export const deleteCompany = async (
 
     companyJobs?.forEach(async (job) => {
       const applications = await ApplicationModel.find({ jobId: job._id });
-      applications?.map(async (application) => {
+      applications?.forEach(async (application) => {
         await application.deleteOne();
-        await application.save();
       });
+      await (applications as any)?.save();
       await job.deleteOne();
-      await job.save();
     });
+
+    await (companyJobs as any)?.save();
 
     res
       .status(201)
