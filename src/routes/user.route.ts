@@ -16,6 +16,7 @@ import { authMiddleware } from "../middlewares/auth.middleware";
 import { validationMiddleware } from "../middlewares/validation.middleware";
 import {
   forgetPasswordSchema,
+  getAssocRecEmailSchema,
   getProfileDataSchema,
   resetPasswordSchema,
   signinSchema,
@@ -74,7 +75,7 @@ export default (router: Router) => {
 
   router.get(
     "/user/recovery-email-associated",
-    validationMiddleware(forgetPasswordSchema),
+    validationMiddleware(getAssocRecEmailSchema),
     getAssocRecEmail
   );
 };

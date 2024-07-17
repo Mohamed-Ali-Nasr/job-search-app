@@ -152,3 +152,9 @@ export const resetPasswordSchema = {
       }),
   }),
 };
+
+export const getAssocRecEmailSchema = {
+  body: Joi.object({
+    recoveryEmail: Joi.string().email().required(),
+  }),
+};
