@@ -219,7 +219,7 @@ export const getApplicationsJobs = async (
 
     //! Check If These Applications Exist In Database =>
     if (applicationsJobs.length < 1) {
-      throw createHttpError(400, "There Is No Companies With This Name");
+      throw createHttpError(400, "There Is No Companies Founds");
     }
 
     res.status(200).json(applicationsJobs);
