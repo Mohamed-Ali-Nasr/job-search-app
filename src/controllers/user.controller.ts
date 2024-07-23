@@ -12,6 +12,7 @@ import CompanyModel from "../models/company.model";
 import JobModel from "../models/job.model";
 import ApplicationModel from "../models/application.model";
 import { generateOTP } from "../utils/generateOtp.util";
+import crypto from "crypto";
 
 export const signup: RequestHandler = async (req, res, next) => {
   const {
@@ -377,10 +378,13 @@ export const forgetPassword: RequestHandler = async (req, res, next) => {
     //! Generate OTP =>
     const otp = generateOTP();
 
+    //! Hashed Otp =>
+    const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
+
     //! Save OTP To Database With Expiration Time =>
     await UserModel.findOneAndUpdate(
       { $or: [{ email }, { recoveryEmail: email }] },
-      { otp, otpExpires: new Date(Date.now() + 300000) } // OTP expires in 5 minutes
+      { otp: hashedOtp, otpExpires: new Date(Date.now() + 300000) } // OTP expires in 5 minutes
     );
 
     //! Send OTP To User's Email =>
@@ -415,8 +419,11 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, "No Users Found By This Id");
     }
 
+    //! Hashed Otp =>
+    const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
+
     //! Check If OTP Is Correct And Not Expired =>
-    if (user.otp !== otp || user.otpExpires < new Date()) {
+    if (user.otp !== hashedOtp || user.otpExpires < new Date()) {
       throw createHttpError(400, "Invalid or expired OTP");
     }
 
@@ -427,7 +434,7 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
     //! Update The Old Password With The New Password =>
     await UserModel.findOneAndUpdate(
       { $or: [{ email }, { recoveryEmail: email }] },
-      { password: hashedNewPassword }
+      { password: hashedNewPassword, otp: null, otpExpires: null }
     );
 
     res.status(201).json({
